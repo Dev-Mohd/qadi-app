@@ -23,6 +23,7 @@ npm run still -- Sample out/frame.png --frame=30
 | `src/Root.tsx` | تسجيل المقاطع |
 | `src/fonts.ts` | الخطوط العربية (Tajawal, Cairo, IBM Plex Sans Arabic, Almarai) |
 | `src/formats.ts` | المقاسات: عمودي 1080×1920، أفقي 1920×1080، مربع 1080×1080 |
+| `scripts/prepare.sh` | تحويل مقاطع الآيفون HDR إلى نسخ جاهزة للمونتاج (يُشغَّل بعد `npm install`) |
 | `scripts/transcribe.py` | تفريغ الصوت إلى كابشن بتوقيت الكلمات (`pip install -r scripts/requirements.txt`) |
 | `out/` | المقاطع المصدّرة (غير مرفوعة على git) |
 
