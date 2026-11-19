@@ -2,9 +2,40 @@ import React from 'react';
 import {AbsoluteFill, Img, OffthreadVideo, Series, interpolate, staticFile, useCurrentFrame} from 'remotion';
 
 // Warm, slightly punchy grade to match the reference.
-const PHOTO_GRADE = 'contrast(1.08) saturate(1.12) brightness(1.02)';
-// Tonemapped iPhone clips come out more orange than the photos; pull them back to match.
-const VIDEO_GRADE = 'contrast(1.08) saturate(0.88) brightness(1.02)';
+// Colour looks, applied as SVG filters. Brightness is raised with a gamma curve
+// (lifts midtones and shadows without clipping highlights, unlike CSS brightness()).
+// Each look has separate photo and video settings: the tonemapped iPhone clips come
+// out more orange than the photos, so they get less saturation and less added warmth.
+type Grade = {gamma: number; r: number; g: number; b: number; sat: number; contrast: number};
+export const LOOKS: Record<string, {photo: Grade; video: Grade}> = {
+  // Bright, warm and cosy: the classic coffee look, closest to the reference.
+  warm: {
+    photo: {gamma: 0.78, r: 1.04, g: 1.0, b: 0.92, sat: 1.15, contrast: 1.08},
+    video: {gamma: 0.85, r: 1.0, g: 1.0, b: 0.97, sat: 0.82, contrast: 1.08},
+  },
+  // Bright and neutral: true-to-life colours.
+  clean: {
+    photo: {gamma: 0.78, r: 1.0, g: 1.0, b: 1.0, sat: 1.05, contrast: 1.05},
+    video: {gamma: 0.85, r: 0.97, g: 1.0, b: 1.05, sat: 0.72, contrast: 1.05},
+  },
+  // Darker, high contrast, desaturated: cinematic.
+  moody: {
+    photo: {gamma: 1.0, r: 1.02, g: 1.0, b: 0.97, sat: 0.85, contrast: 1.2},
+    video: {gamma: 1.05, r: 1.0, g: 1.0, b: 1.0, sat: 0.65, contrast: 1.2},
+  },
+};
+export type Look = 'warm' | 'clean' | 'moody';
+
+const GradeFilter: React.FC<{id: string; g: Grade}> = ({id, g}) => (
+  <filter id={id} colorInterpolationFilters="sRGB">
+    <feComponentTransfer>
+      <feFuncR type="gamma" exponent={g.gamma} amplitude={g.r} />
+      <feFuncG type="gamma" exponent={g.gamma} amplitude={g.g} />
+      <feFuncB type="gamma" exponent={g.gamma} amplitude={g.b} />
+    </feComponentTransfer>
+    <feColorMatrix type="saturate" values={String(g.sat)} />
+  </filter>
+);
 
 type Shot =
   | {kind: 'video'; src: string; from: number; frames: number; zoom?: [number, number]; origin?: string; volume?: number}
@@ -26,7 +57,7 @@ const SHOTS: Shot[] = [
 
 export const COFFEE_REEL_DURATION = SHOTS.reduce((a, s) => a + s.frames, 0);
 
-const ShotView: React.FC<{shot: Shot}> = ({shot}) => {
+const ShotView: React.FC<{shot: Shot; look: Look}> = ({shot, look}) => {
   const frame = useCurrentFrame();
   const [z0, z1] = shot.zoom ?? [1, 1];
   const scale = interpolate(frame, [0, shot.frames], [z0, z1]);
@@ -36,7 +67,7 @@ const ShotView: React.FC<{shot: Shot}> = ({shot}) => {
     objectFit: 'cover',
     transform: `scale(${scale})`,
     transformOrigin: shot.origin ?? '50% 50%',
-    filter: shot.kind === 'video' ? VIDEO_GRADE : PHOTO_GRADE,
+    filter: `url(#grade-${shot.kind}) contrast(${LOOKS[look][shot.kind].contrast})`,
   };
   return (
     <AbsoluteFill style={{background: '#000'}}>
@@ -54,7 +85,7 @@ const ShotView: React.FC<{shot: Shot}> = ({shot}) => {
   );
 };
 
-export const CoffeeReel: React.FC = () => {
+export const CoffeeReel: React.FC<{look: Look}> = ({look}) => {
   const frame = useCurrentFrame();
   const fadeOut = interpolate(frame, [COFFEE_REEL_DURATION - 12, COFFEE_REEL_DURATION], [1, 0], {
     extrapolateLeft: 'clamp',
@@ -62,10 +93,14 @@ export const CoffeeReel: React.FC = () => {
   });
   return (
     <AbsoluteFill style={{background: '#000', opacity: fadeOut}}>
+      <svg width="0" height="0" style={{position: 'absolute'}}>
+        <GradeFilter id="grade-photo" g={LOOKS[look].photo} />
+        <GradeFilter id="grade-video" g={LOOKS[look].video} />
+      </svg>
       <Series>
         {SHOTS.map((shot, i) => (
           <Series.Sequence key={i} durationInFrames={shot.frames}>
-            <ShotView shot={shot} />
+            <ShotView shot={shot} look={look} />
           </Series.Sequence>
         ))}
       </Series>
