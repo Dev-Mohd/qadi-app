@@ -4,3 +4,4 @@ out/
 *.log
 .cache/
 public/assets/proxies/
+photos/
