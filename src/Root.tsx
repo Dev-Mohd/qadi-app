@@ -1,5 +1,6 @@
 import React from 'react';
 import {Composition} from 'remotion';
+import {NightPark, NIGHT_PARK_DURATION} from './compositions/NightPark';
 import {FPS, formats} from './formats';
 import {Sample, SAMPLE_DURATION} from './compositions/Sample';
 import {CoffeeReel, COFFEE_REEL_DURATION} from './compositions/CoffeeReel';
@@ -9,5 +10,6 @@ export const Root: React.FC = () => (
   <>
     <Composition id="Sample" component={Sample} durationInFrames={SAMPLE_DURATION} fps={FPS} {...formats.vertical} />
     <Composition id="CoffeeReel" component={CoffeeReel} defaultProps={{look: 'warm' as const}} durationInFrames={COFFEE_REEL_DURATION} fps={FPS} {...formats.vertical} />
+    <Composition id="NightPark" component={NightPark} durationInFrames={NIGHT_PARK_DURATION} fps={FPS} {...formats.vertical} />
   </>
 );
