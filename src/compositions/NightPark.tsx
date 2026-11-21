@@ -71,7 +71,7 @@ const ShotView: React.FC<{shot: Shot}> = ({shot}) => {
 };
 
 // Slow warm dust motes drifting upwards.
-const Dust: React.FC = () => {
+export const Dust: React.FC = () => {
   const frame = useCurrentFrame();
   const {width, height} = useVideoConfig();
   return (
@@ -106,7 +106,7 @@ const Dust: React.FC = () => {
   );
 };
 
-const Grain: React.FC = () => {
+export const Grain: React.FC = () => {
   const frame = useCurrentFrame();
   return (
     <AbsoluteFill style={{mixBlendMode: 'overlay', opacity: 0.16}}>
@@ -121,7 +121,7 @@ const Grain: React.FC = () => {
   );
 };
 
-const Title: React.FC = () => {
+export const Title: React.FC = () => {
   const frame = useCurrentFrame();
   const o = interpolate(frame, [18, 50, 95, 120], [0, 1, 1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   const y = interpolate(frame, [18, 60], [24, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic)});
